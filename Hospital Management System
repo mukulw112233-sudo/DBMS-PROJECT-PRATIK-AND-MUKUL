@@ -1,0 +1,177 @@
+CREATE DATABASE HospitalDB;
+USE HospitalDB;
+CREATE TABLE Department (
+    department_id INT PRIMARY KEY,
+    department_name VARCHAR(50) NOT NULL UNIQUE,
+    location VARCHAR(50)
+);
+
+CREATE TABLE Doctor (
+    doctor_id INT PRIMARY KEY,
+    doctor_name VARCHAR(100) NOT NULL,
+    specialization VARCHAR(50),
+    phone VARCHAR(15) UNIQUE,
+    department_id INT,
+    consultation_fee DECIMAL(10,2),
+    FOREIGN KEY (department_id) REFERENCES Department(department_id)
+);
+
+CREATE TABLE Patient (
+    patient_id INT PRIMARY KEY,
+    patient_name VARCHAR(100) NOT NULL,
+    age INT,
+    gender VARCHAR(10),
+    phone VARCHAR(15),
+    address VARCHAR(100)
+);
+
+CREATE TABLE Nurse (
+    nurse_id INT PRIMARY KEY,
+    nurse_name VARCHAR(100) NOT NULL,
+    phone VARCHAR(15),
+    department_id INT,
+    FOREIGN KEY (department_id) REFERENCES Department(department_id)
+);
+
+CREATE TABLE Room (
+    room_id INT PRIMARY KEY,
+    room_type VARCHAR(30),
+    room_charge DECIMAL(10,2),
+    room_status VARCHAR(20)
+);
+
+CREATE TABLE Appointment (
+    appointment_id INT PRIMARY KEY,
+    patient_id INT,
+    doctor_id INT,
+    appointment_date DATE,
+    appointment_time TIME,
+    status VARCHAR(20),
+    FOREIGN KEY (patient_id) REFERENCES Patient(patient_id),
+    FOREIGN KEY (doctor_id) REFERENCES Doctor(doctor_id)
+);
+
+CREATE TABLE Admission (
+    admission_id INT PRIMARY KEY,
+    patient_id INT,
+    room_id INT,
+    admission_date DATE,
+    discharge_date DATE,
+    FOREIGN KEY (patient_id) REFERENCES Patient(patient_id),
+    FOREIGN KEY (room_id) REFERENCES Room(room_id)
+);
+
+CREATE TABLE Treatment (
+    treatment_id INT PRIMARY KEY,
+    patient_id INT,
+    doctor_id INT,
+    treatment_description VARCHAR(150),
+    treatment_date DATE,
+    FOREIGN KEY (patient_id) REFERENCES Patient(patient_id),
+    FOREIGN KEY (doctor_id) REFERENCES Doctor(doctor_id)
+);
+
+CREATE TABLE Medicine (
+    medicine_id INT PRIMARY KEY,
+    medicine_name VARCHAR(100),
+    price DECIMAL(10,2),
+    stock_quantity INT
+);
+
+CREATE TABLE Billing (
+    bill_id INT PRIMARY KEY,
+    patient_id INT,
+    admission_id INT,
+    bill_date DATE,
+    total_amount DECIMAL(10,2),
+    payment_status VARCHAR(20),
+    FOREIGN KEY (patient_id) REFERENCES Patient(patient_id),
+    FOREIGN KEY (admission_id) REFERENCES Admission(admission_id)
+);
+
+INSERT INTO Department VALUES
+(1, 'Cardiology', 'First Floor'),
+(2, 'Neurology', 'Second Floor'),
+(3, 'Orthopedics', 'Ground Floor');
+
+INSERT INTO Doctor VALUES
+(101, 'Dr. Sharma', 'Cardiologist', '9876500001', 1, 800),
+(102, 'Dr. Verma', 'Neurologist', '9876500002', 2, 1000),
+(103, 'Dr. Singh', 'Orthopedic', '9876500003', 3, 700);
+
+INSERT INTO Patient VALUES
+(1, 'Aman Kumar', 25, 'Male', '9811100001', 'Chandigarh'),
+(2, 'Priya Sharma', 30, 'Female', '9811100002', 'Mohali'),
+(3, 'Rahul Verma', 40, 'Male', '9811100003', 'Ludhiana');
+
+INSERT INTO Nurse VALUES
+(201, 'Neha Gupta', '9811200001', 1),
+(202, 'Simran Kaur', '9811200002', 2),
+(203, 'Pooja Singh', '9811200003', 3);
+
+INSERT INTO Room VALUES
+(301, 'General', 1000, 'Available'),
+(302, 'Private', 2500, 'Occupied'),
+(303, 'ICU', 5000, 'Available');
+
+INSERT INTO Appointment VALUES
+(401, 1, 101, '2026-10-28', '10:00:00', 'Scheduled'),
+(402, 2, 102, '2026-10-29', '11:00:00', 'Completed'),
+(403, 3, 103, '2026-10-30', '12:00:00', 'Scheduled');
+
+INSERT INTO Admission VALUES
+(501, 1, 302, '2026-10-27', NULL),
+(502, 2, 301, '2026-10-25', '2026-10-27');
+
+INSERT INTO Treatment VALUES
+(601, 1, 101, 'Cardiac Checkup', '2026-10-28'),
+(602, 2, 102, 'Neurological Examination', '2026-10-29'),
+(603, 3, 103, 'Bone Examination', '2026-10-30');
+
+(701, 'Paracetamol', 30, 100),
+(702, 'Amoxicillin', 80, 50),
+(703, 'Vitamin Tablets', 120, 75);
+
+INSERT INTO Billing VALUES
+(801, 1, 501, '2026-10-28', 5000, 'Unpaid'),
+(802, 2, 502, '2026-10-27', 3500, 'Paid');
+
+SHOW TABLES;
+
+SELECT * FROM Patient;
+SELECT * FROM Doctor;
+SELECT * FROM Department;
+SELECT * FROM Nurse;
+SELECT * FROM Room;
+SELECT * FROM Appointment;
+SELECT * FROM Admission;
+SELECT * FROM Treatment;
+SELECT * FROM Medicine;
+SELECT * FROM Billing;
+
+SELECT
+    Patient.patient_name,
+    Doctor.doctor_name,
+    Doctor.specialization,
+    Appointment.appointment_date
+FROM Appointment
+JOIN Patient ON Appointment.patient_id = Patient.patient_id
+JOIN Doctor ON Appointment.doctor_id = Doctor.doctor_id;
+
+SELECT COUNT(*) AS Total_Patients FROM Patient;
+
+
+SELECT SUM(total_amount) AS Total_Billing FROM Billing;
+
+
+SELECT
+    Department.department_name,
+    COUNT(Doctor.doctor_id) AS Total_Doctors
+FROM Department
+LEFT JOIN Doctor
+    ON Department.department_id = Doctor.department_id
+GROUP BY Department.department_id, Department.department_name;
+
+SELECT * FROM Room WHERE room_status = 'Available';
+
+SELECT * FROM Billing WHERE payment_status = 'Unpaid';
